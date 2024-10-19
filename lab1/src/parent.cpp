@@ -40,9 +40,9 @@ int main() {
         sprintf(pipe_read_fd, "%d", fd[0]);
 
         // Выполняем дочерний процесс
-        char* args[] = {const_cast<char*>("./children"), pipe_read_fd, file_name_arg, NULL};
+        char* args[] = {const_cast<char*>("./child"), pipe_read_fd, file_name_arg, NULL};
 
-        execve("./children", args, NULL);
+        execve("./child", args, NULL);
         exit(1);
 
     } else {

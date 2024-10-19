@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
-        std::cout << "Usage: <pipe_read_fd> <output_file>" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <pipe_read_fd> <output_file>" << std::endl;
         return -1;
     }
 
