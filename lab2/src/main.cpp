@@ -4,21 +4,25 @@
 #include <unistd.h>
 #include <sys/sysinfo.h>
 
+// Мьютекс для синхронизации доступа
 pthread_mutex_t mutex;
 
-uint32_t MAX_THREADS;
-uint32_t ACTIVE_THREADS = 0;
+uint32_t MAX_THREADS; // Макс кол-во потоков
+uint32_t ACTIVE_THREADS = 0; // Кол-во активных потоков
 
+// Конфиг для передачи аргументов в другие потоки
 struct ThreadConfig {
     int* arr;
     int left;
     int right;
-    int depth;
 };
 
 int partition(int* arr, int left, int right) {
-    int pivot = arr[right];
+    int pivot = arr[right]; // Выбираем опорный элемент
     int i = left - 1;
+
+    // Элементы меньшие или равные опорному размещаем слева,
+    // а большие - справа
     for (int j = left; j < right; ++j) {
         if (arr[j] <= pivot) {
             ++i;
@@ -32,18 +36,18 @@ int partition(int* arr, int left, int right) {
 void* quicksort(void *args) {
     std::cout << "ACTIVE THREADS: " << ACTIVE_THREADS << std::endl;
 
+    // Получаем аргументы путем приведения к ThreadConfig*
     ThreadConfig *targs = (ThreadConfig*)args;
 
     int* arr = targs->arr;
     int left = targs->left;
     int right = targs->right;
-    int depth = targs->depth;
 
     if (left < right) {
         int pivot = partition(arr, left, right);
 
-        ThreadConfig left_cfg = {arr, left, pivot - 1, depth + 1};
-        ThreadConfig right_cfg = {arr, pivot + 1, right, depth + 1};
+        ThreadConfig left_cfg = {arr, left, pivot - 1};
+        ThreadConfig right_cfg = {arr, pivot + 1, right};
 
         pthread_t left_t, right_t;
         bool create_left_thread = false, create_right_thread = false;
@@ -72,12 +76,15 @@ void* quicksort(void *args) {
 
         if (create_right_thread) {
             pthread_create(&right_t, nullptr, quicksort, &right_cfg);
+        } else {
+            quicksort(&right_cfg);
         }
 
-        // waiting threads
+        // Ждем завершения потоков
         if (create_left_thread) pthread_join(left_t, nullptr);
         if (create_right_thread) pthread_join(right_t, nullptr);
 
+        // Уменьшаем кол-во активных потоков с блокировкой мьютекса
         pthread_mutex_lock(&mutex);
         --ACTIVE_THREADS;
         pthread_mutex_unlock(&mutex);
@@ -87,7 +94,7 @@ void* quicksort(void *args) {
 }
 
 void parallel_quicksort(int* arr, int left, int right) {
-    ThreadConfig cfg = {arr, left, right, 0};
+    ThreadConfig cfg = {arr, left, right};
     quicksort(&cfg);
 }
 
