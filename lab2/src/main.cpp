@@ -30,7 +30,7 @@ int partition(int* arr, int left, int right) {
         }
     }
     std::swap(arr[i + 1], arr[right]);
-    return i + 1;
+    return i + 1; // Возврашщаем опорный элемент
 }
 
 void* quicksort(void *args) {
@@ -46,13 +46,14 @@ void* quicksort(void *args) {
     if (left < right) {
         int pivot = partition(arr, left, right);
 
+        // Конфиги для передачи в потоки
         ThreadConfig left_cfg = {arr, left, pivot - 1};
         ThreadConfig right_cfg = {arr, pivot + 1, right};
 
         pthread_t left_t, right_t;
         bool create_left_thread = false, create_right_thread = false;
 
-        // left part
+        // Для левой части
         pthread_mutex_lock(&mutex);
         if (ACTIVE_THREADS < MAX_THREADS) {
             ++ACTIVE_THREADS;
@@ -60,13 +61,14 @@ void* quicksort(void *args) {
         }
         pthread_mutex_unlock(&mutex);
 
+        // Создаем новый поток если можем, если нет - запускаем в этом же
         if (create_left_thread) {
             pthread_create(&left_t, nullptr, quicksort, &left_cfg);
         } else {
             quicksort(&left_cfg);
         }
 
-        // right part
+        // Ананлогично для правой части
         pthread_mutex_lock(&mutex);
         if (ACTIVE_THREADS < MAX_THREADS) {
             ++ACTIVE_THREADS;
@@ -104,8 +106,8 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    MAX_THREADS = std::atoi(argv[1]);
-    pthread_mutex_init(&mutex, NULL);
+    MAX_THREADS = std::atoi(argv[1]); // Получаем значение макс-ого кол-ва потоков
+    pthread_mutex_init(&mutex, NULL); // Инициализируем мьютекс
 
     int n;
     std::cout << "Enter the size of array: ";
@@ -116,8 +118,10 @@ int main(int argc, char *argv[]) {
         std::cin >> arr[i];
     }
 
+    // Сортируем
     parallel_quicksort(arr.data(), 0, arr.size() - 1);
 
+    // Выводим результат
     std::cout << "Sorted array: \n";
     for (int num : arr) {
         std::cout << num << " ";
