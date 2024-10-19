@@ -7,7 +7,7 @@
 #include <sstream>
 
 int main() {
-    // Для передачи данных из родительского потока в дочерний
+    // Создаем канал для передачи данных между процессами
     int fd[2];
     pid_t pid;
 
@@ -30,7 +30,7 @@ int main() {
 
     if (pid == 0) {
         // Дочерний процесс
-        close(fd[1]); // Закрываем дескриптор fd[1]
+        close(fd[1]); // Закрываем канал для записи
 
         // Сохраняем в массивах char файловый дескриптор и название выходного файла
         char pipe_read_fd[10];
@@ -39,14 +39,15 @@ int main() {
         strcpy(file_name_arg, file_name.c_str());
         sprintf(pipe_read_fd, "%d", fd[0]);
 
-        // Выполняем дочерний процесс
+        // Сохраняем аргументы
         char* args[] = {const_cast<char*>("./child"), pipe_read_fd, file_name_arg, NULL};
 
+        // Заменяем процесс на выполнение дочерней программы child
         execve("./child", args, NULL);
         exit(1);
 
     } else {
-        close(fd[0]);
+        close(fd[0]); // Закрываем канал для чтения
 
         // Ввод чисел
         std::string numbers;
@@ -55,7 +56,7 @@ int main() {
         
         // Записываем данные 
         write(fd[1], numbers.c_str(), numbers.size());
-        close(fd[1]);
+        close(fd[1]); // Закрываем канал для записи
 
         wait(NULL); // Ожидаем завершения дочернего потока
     }
