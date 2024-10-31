@@ -18,8 +18,8 @@ struct ThreadConfig {
 };
 
 int partition(int* arr, int left, int right) {
-    int pivot = arr[right]; // Выбираем опорный элемент
-    int i = left - 1;
+    int pivot = arr[right]; // Выбираем последний элемент в качестве опорного
+    int i = left - 1; // Индекс меньшего элемента
 
     // Элементы меньшие или равные опорному размещаем слева,
     // а большие - справа
