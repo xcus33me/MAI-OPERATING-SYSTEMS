@@ -13,17 +13,18 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Получаем аргументы
+    // Получаем путь к файлу. размер
     char* filepath = argv[1];
     int FILESIZE = atoi(argv[2]);
 
-    // Открываем файл и отображаем его в память
+    // Открываем файл для чтения и записи
     int fd = open(filepath, O_RDWR);
     if (fd == -1) {
         perror("Error opening file in child.");
         return 1;
     }
 
+    // Отображает в память содерживое файла, разрешает запись и чтение
     char *mapped = (char*)mmap(NULL, FILESIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (mapped == MAP_FAILED) {
         perror("Error mapping file in child.");
@@ -59,7 +60,7 @@ int main(int argc, char *argv[]) {
         result /= nums[i];
     }
 
-    // Записываем финальный результат в файл (перезаписываем, чтобы остался только последний результат)
+    // Записываем финальный результат в файл
     FILE *result_file = fopen("result.txt", "w"); // Открываем в режиме записи, чтобы перезаписать содержимое
     if (!result_file) {
         perror("Error opening result file.");

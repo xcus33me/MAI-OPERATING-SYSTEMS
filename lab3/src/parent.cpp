@@ -14,10 +14,12 @@
 #define FILEPATH "/tmp/file"
 #define FILESIZE 4096
 
+// ID дочернего процесса, который родитель будет использовать
+// для отправки сигнала
 pid_t child_pid;
 
 void signal_handler(int sig) {
-    // Обработчик для дочернего процесса, ничего не делает
+    // Обработчик для дочернего процесса, просто ждем сигнала
 }
 
 int main() {
@@ -59,7 +61,7 @@ int main() {
 
         // Устанавливаем оброботчик сигнала
         signal(SIGUSR1, signal_handler);
-        pause();
+        pause(); // Ожидаем сигнал от родительского процесса
 
         // После получения сигнала запускает новую программу
         char filesize_str[10];
@@ -89,17 +91,10 @@ int main() {
         kill(child_pid, SIGUSR1);
 
         // Ожидаем завершения дочернего процесса
-        int status;
-        waitpid(child_pid, &status, 0);
-        if (WIFEXITED(status)) {
-            std::cout << "Child process exited with code: " << WEXITSTATUS(status) << "\n";
-        } else if (WIFSIGNALED(status)) {
-            std::cout << "Child process terminated by signal: " << WTERMSIG(status) << "\n";
-        }
+        wait(NULL);
 
         // Освобождаем память
         munmap(mapped, FILESIZE);
-        unlink(FILEPATH);
     }
 
     return 0;
