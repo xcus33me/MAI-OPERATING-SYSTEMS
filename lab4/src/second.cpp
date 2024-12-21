@@ -3,9 +3,11 @@
 #include <cstddef>
 #include <dlfcn.h>
 
+// Указатели на функции
 int (*PrimeCountFunc)(int, int);
 int* (*SortFunc)(int*, int);
 
+// Указатели на библиотеки
 void* handle_prime;
 void* handle_sort;
 
@@ -47,8 +49,10 @@ int main() {
 }
 
 void load_libs() {
+    // Загрузка библиотек
     handle_prime = dlopen("libs/prime_sieve.so", RTLD_LAZY);
     handle_sort = dlopen("libs/hoare_sort.so", RTLD_LAZY);
+
 
     if (!handle_prime) {
         fprintf(stderr, "Error loading prime library: %s\n", dlerror());
@@ -62,6 +66,7 @@ void load_libs() {
     // Reset dlerror()
     dlerror();
 
+    // Получение символа "PrimeCount" из библиотеки. Указатель на функцию извлекается из библиотеки
     PrimeCountFunc = (int (*)(int, int))dlsym(handle_prime, "PrimeCount");
     char* error = dlerror();
     if (error) {
@@ -69,6 +74,7 @@ void load_libs() {
         exit(1);
     }
 
+    // Получение символа "Sort" из библиотеки. Указатель на функцию извлекается из библиотеки   
     SortFunc = (int* (*)(int*, int))dlsym(handle_sort, "Sort");
     error = dlerror();
     if (error) {
